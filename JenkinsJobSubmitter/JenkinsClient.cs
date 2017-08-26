@@ -23,11 +23,11 @@ namespace JenkinsJobSubmitter
         {
             if (parameters == null) throw new ArgumentNullException(nameof(parameters));
 
-            string crumb = await GetCrumbAsync();
-
             using (var request = new HttpRequestMessage(HttpMethod.Post, $"job/{jobName}/buildWithParameters?token={jobToken}"))
             {
-                request.Headers.Add("Jenkins-Crumb", crumb);
+                (string requestField, string crumb) = await GetCrumbAsync();
+                request.Headers.Add(requestField, crumb);
+
                 object obj = new { parameter = parameters.Select(p => new { name = p.Item1, value = p.Item2 }) };
                 string serializedObj = JsonConvert.SerializeObject(obj);
                 request.Content = new StringContent(
@@ -46,7 +46,8 @@ namespace JenkinsJobSubmitter
         {
             using (var request = new HttpRequestMessage(HttpMethod.Post, $"job/{jobName}/build?token={jobToken}"))
             {
-                request.Headers.Add("Jenkins-Crumb", await GetCrumbAsync());
+                (string requestField, string crumb) = await GetCrumbAsync();
+                request.Headers.Add(requestField, crumb);
 
                 using (var response = await _httpClient.SendAsync(request))
                 {
@@ -74,7 +75,7 @@ namespace JenkinsJobSubmitter
 #endregion
 
 #region Internal stuff
-        private async Task<string> GetCrumbAsync()
+        private async Task<(string requestField, string crumb)> GetCrumbAsync()
         {
             using (var request = new HttpRequestMessage(HttpMethod.Get, "crumbIssuer/api/json"))
             using (var response = await _httpClient.SendAsync(request))
@@ -82,8 +83,16 @@ namespace JenkinsJobSubmitter
                 response.EnsureSuccessStatusCode();
 
                 string responseBody = await response.Content.ReadAsStringAsync();
-                dynamic obj = JsonConvert.DeserializeObject(responseBody);
-                return obj.crumb;
+
+                // anonymous type to provide shape of return data
+                var crumbDefinition = new {
+                    _class = default(string),
+                    crumb = default(string),
+                    crumbRequestField = default(string)
+                };
+                var crumbData = JsonConvert.DeserializeAnonymousType(responseBody, crumbDefinition);
+
+                return (crumbData.crumbRequestField, crumbData.crumb);
             }
         }
 #endregion
