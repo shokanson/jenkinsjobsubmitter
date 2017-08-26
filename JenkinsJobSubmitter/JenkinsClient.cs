@@ -10,10 +10,10 @@ namespace JenkinsJobSubmitter
 {
     class JenkinsClient : IDisposable
     {
-        public JenkinsClient(string baseUri, string userName, string userToken)
+        public JenkinsClient(JenkinsConfiguration config)
         {
-            _httpClient = new HttpClient { BaseAddress = new Uri(baseUri) };
-            string basicAuthValue = Convert.ToBase64String(Encoding.GetEncoding("ISO-8859-1").GetBytes($"{userName}:{userToken}"));
+            _httpClient = new HttpClient { BaseAddress = new Uri(config.JenkinsServerUri) };
+            string basicAuthValue = Convert.ToBase64String(Encoding.GetEncoding("ISO-8859-1").GetBytes($"{config.UserName}:{config.UserToken}"));
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", basicAuthValue);
         }
 

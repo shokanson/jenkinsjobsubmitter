@@ -46,7 +46,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ConfigHelpers.cs" />
     <Compile Include="JenkinsClient.cs" />
     <Compile Include="JenkinsConfiguration.cs" />
     <Compile Include="Program.cs" />

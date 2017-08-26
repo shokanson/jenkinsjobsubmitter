@@ -26,6 +26,7 @@ namespace JenkinsJobSubmitter
 
             string jenkinsServerUri = ConfigurationManager.AppSettings[JenkinsServerUriKey];
             if (string.IsNullOrEmpty(jenkinsServerUri)) throw new Exception($"{JenkinsServerUriKey} not found in config");
+            if (!jenkinsServerUri.EndsWith("/")) jenkinsServerUri += "/";
             JenkinsServerUri = jenkinsServerUri;
             
             string jobTokens = ConfigurationManager.AppSettings[JobTokensKey];
