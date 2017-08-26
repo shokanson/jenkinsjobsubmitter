@@ -42,7 +42,20 @@ namespace JenkinsJobSubmitter
             }
         }
 
-#region IDisposable
+        public async Task SubmitJobAsync(string jobName, string jobToken)
+        {
+            using (var request = new HttpRequestMessage(HttpMethod.Post, $"job/{jobName}/build?token={jobToken}"))
+            {
+                request.Headers.Add("Jenkins-Crumb", await GetCrumbAsync());
+
+                using (var response = await _httpClient.SendAsync(request))
+                {
+                    response.EnsureSuccessStatusCode();
+                }
+            }
+        }
+
+        #region IDisposable
 
         public void Dispose()
         {
