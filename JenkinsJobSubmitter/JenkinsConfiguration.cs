@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace JenkinsJobSubmitter
 {
@@ -26,7 +23,6 @@ namespace JenkinsJobSubmitter
 
             string jenkinsServerUri = ConfigurationManager.AppSettings[JenkinsServerUriKey];
             if (string.IsNullOrEmpty(jenkinsServerUri)) throw new Exception($"{JenkinsServerUriKey} not found in config");
-            if (!jenkinsServerUri.EndsWith("/")) jenkinsServerUri += "/";
             JenkinsServerUri = jenkinsServerUri;
             
             string jobTokens = ConfigurationManager.AppSettings[JobTokensKey];
