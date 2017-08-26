@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<configuration>
+  <startup>
+    <supportedRuntime version="v4.0" sku=".NETFramework,Version=v4.7" />
+  </startup>
+  <appSettings>
+    <add key="JenkinsServerUri" value="{Uri with trailing slash}" />
+    <add key="UserName" value="{user name}" />
+    <add key="UserToken" value="{user token}" />
+    <add key="JobTokens" value="{comma-separated list of equals-separated name-value pairs, e.g. a=b,c=d}" />
+  </appSettings>
+</configuration>

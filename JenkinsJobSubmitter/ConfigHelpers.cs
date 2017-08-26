@@ -16,12 +16,12 @@ namespace JenkinsJobSubmitter
             string jobTokens = ConfigurationManager.AppSettings[JobTokensKey];
             if (string.IsNullOrEmpty(jobTokens)) return;
 
-            foreach (var pair in jobTokens.Split(';'))
+            foreach (var pair in jobTokens.Trim().Split(','))
             {
-                string[] parts = pair.Split(':');
+                string[] parts = pair.Trim().Split(':');
                 if (parts.Length != 2) return;
 
-                JobTokens[parts[0]] = parts[1];
+                JobTokens[parts[0].Trim()] = parts[1].Trim();
             }
         }
 
