@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Hokanson.JenkinsClient;
+using System;
 
 namespace JenkinsJobSubmitter
 {
@@ -12,15 +13,17 @@ namespace JenkinsJobSubmitter
             string paramName = args[1];
             string paramValue = args[2];
 
-            var config = new JenkinsConfiguration();
-
-            if (config.JobTokens.TryGetValue(jobName, out string jobToken))
+            try
             {
-                using (var jenkinsClient = new JenkinsClient(config))
+                using (var jenkinsClient = new JenkinsClient(new JenkinsConfiguration()))
                 {
-                    jenkinsClient.SubmitParameterizedJobAsync(jobName, jobToken, new[] { new Tuple<string, string>(paramName, paramValue) })
+                    jenkinsClient.SubmitParameterizedJobAsync(jobName, new[] { new Tuple<string, string>(paramName, paramValue) })
                                  .Wait();
                 }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.ToString());
             }
         }
     }

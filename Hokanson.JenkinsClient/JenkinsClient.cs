@@ -6,22 +6,26 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace JenkinsJobSubmitter
+namespace Hokanson.JenkinsClient
 {
-    class JenkinsClient : IDisposable
+    public class JenkinsClient : IDisposable
     {
         public JenkinsClient(JenkinsConfiguration config)
         {
+            _config = config;
             _httpClient = new HttpClient { BaseAddress = new Uri(config.JenkinsServerUri) };
             string basicAuthValue = Convert.ToBase64String(Encoding.GetEncoding("ISO-8859-1").GetBytes($"{config.UserName}:{config.UserToken}"));
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", basicAuthValue);
         }
 
         private readonly HttpClient _httpClient;
+        private readonly JenkinsConfiguration _config;
 
-        public async Task SubmitParameterizedJobAsync(string jobName, string jobToken, Tuple<string,string>[] parameters)
+        public async Task SubmitParameterizedJobAsync(string jobName, Tuple<string,string>[] parameters)
         {
             if (parameters == null) throw new ArgumentNullException(nameof(parameters));
+            if (!_config.JobTokens.TryGetValue(jobName, out string jobToken))
+                throw new Exception($"no token exists for job '{jobName}'");
 
             using (var request = new HttpRequestMessage(HttpMethod.Post, $"job/{jobName}/buildWithParameters?token={jobToken}"))
             {
@@ -42,8 +46,11 @@ namespace JenkinsJobSubmitter
             }
         }
 
-        public async Task SubmitJobAsync(string jobName, string jobToken)
+        public async Task SubmitJobAsync(string jobName)
         {
+            if (!_config.JobTokens.TryGetValue(jobName, out string jobToken))
+                throw new Exception($"no token exists for job '{jobName}'");
+
             using (var request = new HttpRequestMessage(HttpMethod.Post, $"job/{jobName}/build?token={jobToken}"))
             {
                 (string requestField, string crumb) = await GetCrumbAsync();

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Configuration;
 
-namespace JenkinsJobSubmitter
+namespace Hokanson.JenkinsClient
 {
     public class JenkinsConfiguration
     {
