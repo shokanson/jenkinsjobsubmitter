@@ -23,6 +23,7 @@ namespace Hokanson.JenkinsClient
 
         public Task SubmitParameterizedJob(string jobName, IEnumerable<(string name, string value)> parameters)
         {
+            if (parameters == null) throw new ArgumentNullException(nameof(parameters));
             if (!_config.JobTokens.TryGetValue(jobName, out string jobToken))
                 throw new Exception($"no token exists for job '{jobName}'");
 
