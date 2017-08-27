@@ -1,5 +1,8 @@
-﻿using Hokanson.JenkinsClient;
+﻿using CommandLine;
+using Hokanson.JenkinsClient;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace JenkinsJobSubmitter
 {
@@ -7,24 +10,54 @@ namespace JenkinsJobSubmitter
     {
         static void Main(string[] args)
         {
-            if (args == null || args.Length != 3) return;
-
-            string jobName = args[0];
-            string paramName = args[1];
-            string paramValue = args[2];
-
-            try
-            {
-                using (var jenkinsClient = new JenkinsClient(new JenkinsConfiguration()))
+            Parser.Default.ParseArguments<Options>(args)
+                .WithNotParsed(errors =>
                 {
-                    jenkinsClient.SubmitParameterizedJobAsync(jobName, new[] { new Tuple<string, string>(paramName, paramValue) })
-                                 .Wait();
-                }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.ToString());
-            }
+                    foreach (var error in errors)
+                    {
+                        Console.WriteLine(error.ToString());
+                    }
+                })
+                .WithParsed(options =>
+                {
+                    try
+                    {
+                        using (var jenkinsClient = new JenkinsClient(new JenkinsConfiguration()))
+                        {
+                            if (options.Parameters.Count() == 0)
+                            {
+                                jenkinsClient.SubmitJobAsync(options.JobName)
+                                             .Wait();
+                            }
+                            else
+                            {
+                                IEnumerable<(string, string)> parameters = options.Parameters.Select(p =>
+                                {
+                                    if (!p.Contains('=')) throw new Exception("parameter name-value pair must be separated by an equals sign");
+
+                                    string[] parts = p.Split('=');
+                                    return (parts[0], parts[1]);
+                                });
+
+                                jenkinsClient.SubmitParameterizedJob(options.JobName, parameters)
+                                             .Wait();
+                            }
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e.ToString());
+                    }
+                });
         }
+    }
+
+    class Options
+    {
+        [Option('j', "jobname", Required = true, HelpText = "The name of the job to be submitted")]
+        public string JobName { get; set; }
+
+        [Option('p', "parameterlist", HelpText = "List of equals-separated name-value pairs of parameters for the requested job")]
+        public IEnumerable<string> Parameters { get; set; }
     }
 }

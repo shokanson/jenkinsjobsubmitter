@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System;
-using System.Linq;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
@@ -21,49 +21,29 @@ namespace Hokanson.JenkinsClient
         private readonly HttpClient _httpClient;
         private readonly JenkinsConfiguration _config;
 
-        public async Task SubmitParameterizedJobAsync(string jobName, Tuple<string,string>[] parameters)
-        {
-            if (parameters == null) throw new ArgumentNullException(nameof(parameters));
-            if (!_config.JobTokens.TryGetValue(jobName, out string jobToken))
-                throw new Exception($"no token exists for job '{jobName}'");
-
-            using (var request = new HttpRequestMessage(HttpMethod.Post, $"job/{jobName}/buildWithParameters?token={jobToken}"))
-            {
-                (string requestField, string crumb) = await GetCrumbAsync();
-                request.Headers.Add(requestField, crumb);
-
-                object obj = new { parameter = parameters.Select(p => new { name = p.Item1, value = p.Item2 }) };
-                string serializedObj = JsonConvert.SerializeObject(obj);
-                request.Content = new StringContent(
-                    serializedObj,
-                    Encoding.UTF8,
-                    "application/json");
-
-                using (var response = await _httpClient.SendAsync(request))
-                {
-                    response.EnsureSuccessStatusCode();
-                }
-            }
-        }
-
-        public async Task SubmitJobAsync(string jobName)
+        public Task SubmitParameterizedJob(string jobName, IEnumerable<(string name, string value)> parameters)
         {
             if (!_config.JobTokens.TryGetValue(jobName, out string jobToken))
                 throw new Exception($"no token exists for job '{jobName}'");
 
-            using (var request = new HttpRequestMessage(HttpMethod.Post, $"job/{jobName}/build?token={jobToken}"))
+            var uriBuilder = new StringBuilder($"job/{jobName}/buildWithParameters?token={jobToken}");
+            foreach(var parameter in parameters)
             {
-                (string requestField, string crumb) = await GetCrumbAsync();
-                request.Headers.Add(requestField, crumb);
-
-                using (var response = await _httpClient.SendAsync(request))
-                {
-                    response.EnsureSuccessStatusCode();
-                }
+                uriBuilder.Append($"&{parameter.name}={parameter.value}");
             }
+
+            return PostRequestAsync(uriBuilder.ToString());
         }
 
-        #region IDisposable
+        public Task SubmitJobAsync(string jobName)
+        {
+            if (!_config.JobTokens.TryGetValue(jobName, out string jobToken))
+                throw new Exception($"no token exists for job '{jobName}'");
+
+            return PostRequestAsync($"job/{jobName}/build?token={jobToken}");
+        }
+
+#region IDisposable
 
         public void Dispose()
         {
@@ -102,6 +82,20 @@ namespace Hokanson.JenkinsClient
                 return (crumbData.crumbRequestField, crumbData.crumb);
             }
         }
-#endregion
+
+        private async Task PostRequestAsync(string requestUri)
+        {
+            using (var request = new HttpRequestMessage(HttpMethod.Post, requestUri))
+            {
+                (string requestField, string crumb) = await GetCrumbAsync();
+                request.Headers.Add(requestField, crumb);
+
+                using (var response = await _httpClient.SendAsync(request))
+                {
+                    response.EnsureSuccessStatusCode();
+                }
+            }
+        }
+        #endregion
     }
 }
