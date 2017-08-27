@@ -33,9 +33,8 @@ namespace JenkinsJobSubmitter
                             {
                                 IEnumerable<(string, string)> parameters = options.Parameters.Select(p =>
                                 {
-                                    if (!p.Contains('=')) throw new Exception("parameter name-value pair must be separated by an equals sign");
-
                                     string[] parts = p.Split('=');
+                                    if (parts.Length != 2) throw new Exception("parameter name-value pair must be separated by an equals sign");
                                     return (parts[0], parts[1]);
                                 });
 
