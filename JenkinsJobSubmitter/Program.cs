@@ -45,7 +45,12 @@ namespace JenkinsJobSubmitter
                     }
                     catch (Exception e)
                     {
-                        Console.WriteLine(e.ToString());
+                        do
+                        {
+                            Console.WriteLine(e.Message);
+                            e = e.InnerException;
+                        }
+                        while (e != null);
                     }
                 });
         }
