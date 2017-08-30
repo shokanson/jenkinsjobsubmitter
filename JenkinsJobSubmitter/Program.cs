@@ -8,9 +8,7 @@ namespace JenkinsJobSubmitter
 {
     class Program
     {
-        static void Main(string[] args)
-        {
-            Parser.Default.ParseArguments<Options>(args)
+        static void Main(string[] args) => Parser.Default.ParseArguments<Options>(args)
                 .WithNotParsed(errors =>
                 {
                     foreach (var error in errors)
@@ -53,7 +51,6 @@ namespace JenkinsJobSubmitter
                         while (e != null);
                     }
                 });
-        }
     }
 
     class Options
