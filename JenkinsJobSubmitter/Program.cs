@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace JenkinsJobSubmitter
+namespace JottoSubmitter
 {
     class Program
     {
@@ -20,7 +20,7 @@ namespace JenkinsJobSubmitter
                 {
                     try
                     {
-                        using (var jenkinsClient = new JenkinsClient(new JenkinsConfiguration()))
+                        using (var jenkinsClient = new JenkinsClient(JenkinsOptions.Current()))
                         {
                             if (options.Parameters.Count() == 0)
                             {
