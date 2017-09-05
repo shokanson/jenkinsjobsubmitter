@@ -1,0 +1,15 @@
+{
+  "JenkinsServerUri": "{Jenkins server URI}",
+  "UserName": "{Jenkins user name}",
+  "UserToken": "{Jenkins user token}",
+  "JobTokens": [
+    {
+      "JobName": "{job name 1}",
+      "Token": "{token for job name 1}"
+    },
+    {
+      "JobName": "{job name 2}",
+      "Token": "{token for job name 2}"
+    }
+  ]
+}
