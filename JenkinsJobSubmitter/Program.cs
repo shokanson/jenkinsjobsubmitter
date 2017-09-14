@@ -8,13 +8,17 @@ namespace JenkinsJobSubmitter
 {
     class Program
     {
-        static void Main(string[] args) => Parser.Default.ParseArguments<Options>(args)
+        static int Main(string[] args)
+        {
+            int retVal = 0;
+            Parser.Default.ParseArguments<Options>(args)
                 .WithNotParsed(errors =>
                 {
                     foreach (var error in errors)
                     {
                         Console.WriteLine(error.ToString());
                     }
+                    retVal = 1;
                 })
                 .WithParsed(options =>
                 {
@@ -49,8 +53,11 @@ namespace JenkinsJobSubmitter
                             e = e.InnerException;
                         }
                         while (e != null);
+                        retVal = 1;
                     }
                 });
+            return retVal;
+        }
     }
 
     class Options
